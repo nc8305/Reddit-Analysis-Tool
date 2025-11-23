@@ -10,6 +10,9 @@ class ENV:
     DB_PORT = os.getenv("port")
     DB_NAME = os.getenv("dbname")
     DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    REDDIT_CLIENT_ID = os.getenv("REDDIT_CLIENT_ID")
+    REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET")
+    REDDIT_USER_AGENT = os.getenv("REDDIT_USER_AGENT")
 
     # SUPABASE_URL = os.getenv("SUPABASE_URL")
     # SUPABASE_KEY = os.getenv("SUPABASE_KEY")
