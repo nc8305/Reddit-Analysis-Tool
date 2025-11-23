@@ -87,7 +87,7 @@ This repository contains the **frontend** for the Reddit Monitor application. To
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/anatwork14/reddit_monitor.git
+    git clone https://github.com/nc8305/Reddit-Analysis-Tool.git
     cd reddit_monitor
     ```
 2.  **Install require lib:**
