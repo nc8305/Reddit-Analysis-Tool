@@ -23,7 +23,7 @@ def get_relative_time(created_utc):
         return f"{diff // 3600}h ago"
     return f"{diff // 86400}d ago"
 
-def get_user_interactions(username: str, limit: int = 20):
+def get_user_interactions(username: str):
     """
     Lấy danh sách hoạt động (Post + Comment) của user, sắp xếp theo thời gian.
     """
@@ -36,7 +36,7 @@ def get_user_interactions(username: str, limit: int = 20):
 
         # 1. Lấy Comments
         try:
-            for comment in user.comments.new(limit=limit):
+            for comment in user.comments.new():
                 # Phân tích rủi ro sơ bộ
                 risk_level = "low"
                 risk_score = 1
@@ -66,7 +66,7 @@ def get_user_interactions(username: str, limit: int = 20):
 
         # 2. Lấy Posts (Submissions)
         try:
-            for post in user.submissions.new(limit=limit):
+            for post in user.submissions.new():
                 risk_level = "low"
                 risk_score = 1
                 sentiment = "Neutral"
@@ -98,13 +98,13 @@ def get_user_interactions(username: str, limit: int = 20):
         # 3. Gộp và Sắp xếp theo thời gian (Mới nhất lên đầu)
         activities.sort(key=lambda x: x['created_utc'], reverse=True)
         
-        return activities[:limit] # Trả về đúng số lượng yêu cầu
+        return activities[:] # Trả về đúng số lượng yêu cầu
 
     except Exception as e:
         print(f"Lỗi lấy Interaction: {e}")
         return []
 
-def get_user_top_subreddits(username: str, limit: int = 10):
+def get_user_top_subreddits(username: str):
     """
     Lấy danh sách Top 10 subreddits user tương tác nhiều nhất.
     """
@@ -117,20 +117,20 @@ def get_user_top_subreddits(username: str, limit: int = 10):
         
         # 1. Quét 100 comment gần nhất
         try:
-            for comment in user.comments.new(limit=100):
+            for comment in user.comments.new():
                 subreddit_counts[comment.subreddit.display_name] += 1
         except Exception:
             pass 
 
         # 2. Quét 50 post gần nhất
         try:
-            for submission in user.submissions.new(limit=50):
+            for submission in user.submissions.new():
                 subreddit_counts[submission.subreddit.display_name] += 1
         except Exception:
             pass
 
         # 3. Lấy Top N 
-        top_subreddits = subreddit_counts.most_common(limit)
+        top_subreddits = subreddit_counts.most_common()
         
         results = []
         for sub_name, count in top_subreddits:

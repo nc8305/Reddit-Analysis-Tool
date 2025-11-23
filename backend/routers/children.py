@@ -93,4 +93,4 @@ def get_child_interactions(
     clean_username = target_child.reddit_username.replace("u/", "").strip()
     
     # Gọi hàm service lấy post + comment
-    return get_user_interactions(clean_username, limit=20)
+    return get_user_interactions(clean_username)
