@@ -24,7 +24,7 @@ import {
   Plus,
   Trash2,
   UserPlus,
-  RefreshCcw 
+  RefreshCcw
 } from "lucide-react";
 import {
   Select,
@@ -65,18 +65,15 @@ interface Child {
   avatar_url?: string;
 }
 
-// --- 1. SỬA INTERFACE CHO KHỚP VỚI DB ---
 interface Interaction {
   id: string;
   type: "post" | "comment";
   content: string;
   subreddit: string;
-  // Database trả về 'created_at', không phải 'timestamp'
-  created_at: string; 
+  created_at: string;
   score?: number;
   sentiment: string;
-  // Database trả về 'risk_level', không phải 'risk'
-  risk_level: RiskLevel; 
+  risk_level: RiskLevel;
   url: string;
 }
 
@@ -114,7 +111,6 @@ export function ChildMonitoring() {
   const [subredditFilter, setSubredditFilter] = useState("all");
   const [anonymizeReport, setAnonymizeReport] = useState(false);
 
-  // --- 2. HÀM FORMAT THỜI GIAN ---
   const formatTimeAgo = (dateString: string) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -125,34 +121,6 @@ export function ChildMonitoring() {
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
     return `${Math.floor(diffInSeconds / 86400)}d ago`;
-  };
-
-  const handleScan = async () => {
-    if (!selectedChildId) return;
-    setIsScanning(true);
-    toast.info("Sending scan request...");
-
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:8000/api/children/${selectedChildId}/scan`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-
-      if (res.ok) {
-        toast.success("Scanning in background. Data will appear shortly!");
-        setTimeout(() => {
-            fetchInteractions();
-            setIsScanning(false);
-        }, 3000);
-      } else {
-        toast.error("Error sending scan request.");
-        setIsScanning(false);
-      }
-    } catch (e) {
-      toast.error("Server connection error.");
-      setIsScanning(false);
-    }
   };
 
   const fetchChildren = async () => {
@@ -213,7 +181,6 @@ export function ChildMonitoring() {
 
   const fetchSubreddits = async () => {
     if (!selectedChildId) return;
-    
     setIsFetchingSubreddits(true);
     try {
         const token = localStorage.getItem("token");
@@ -234,9 +201,37 @@ export function ChildMonitoring() {
     }
   };
 
+  const handleScan = async () => {
+    if (!selectedChildId) return;
+    setIsScanning(true);
+    toast.info("Sending scan request...");
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:8000/api/children/${selectedChildId}/scan`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        toast.success("Scanning in background. Data will appear shortly!");
+        setTimeout(() => {
+            fetchInteractions();
+            setIsScanning(false);
+        }, 3000);
+      } else {
+        toast.error("Error sending scan request.");
+        setIsScanning(false);
+      }
+    } catch (e) {
+      toast.error("Server connection error.");
+      setIsScanning(false);
+    }
+  };
+
   const handleAddChild = async () => {
     if (!newChildName || !newChildUsername) {
-        toast.error("Please enter a name and Reddit username.");
+        toast.error("Please enter a display name and Reddit username.");
         return;
     }
 
@@ -322,7 +317,7 @@ export function ChildMonitoring() {
             <UserPlus className="h-12 w-12 text-red-500" />
         </div>
         <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-slate-900">Welcome to Reddit Monitor</h2>
+            <h2 className="text-2xl font-bold text-foreground">Welcome to Reddit Monitor</h2>
             <p className="text-muted-foreground max-w-md mx-auto">
             You are not monitoring any accounts. Add your child's Reddit account to start.
             </p>
@@ -371,20 +366,26 @@ export function ChildMonitoring() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header & Controls */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gradient-to-r from-red-50 to-white p-6 rounded-2xl border border-red-100 shadow-sm">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-2xl border shadow-sm 
+        bg-gradient-to-r from-red-50 to-white border-red-100 
+        dark:from-slate-950 dark:to-slate-900 dark:border-red-900/50"> {/* SỬA MÀU NỀN TẠI ĐÂY */}
+        
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
+          <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
             <AlertTriangle className="h-6 w-6 text-red-500" />
             Activity Monitor
           </h1>
-          <p className="text-red-800/80 mt-1">
-            Viewing data for <span className="font-semibold text-red-700">{currentChild?.name}</span> (u/{currentChild?.reddit_username})
+          <p className="text-muted-foreground mt-1">
+            Viewing data for <span className="font-semibold text-red-600 dark:text-red-400">{currentChild?.name}</span> (u/{currentChild?.reddit_username})
           </p>
         </div>
 
-        <div className="flex items-center gap-3 bg-white p-2 rounded-xl border shadow-sm">
-          <Avatar className="h-10 w-10 border-2 border-red-100">
-            <AvatarFallback className="bg-red-50 text-red-600 font-bold">
+        <div className="flex items-center gap-3 p-2 rounded-xl border shadow-sm 
+          bg-white border-slate-200 
+          dark:bg-slate-950 dark:border-slate-800"> {/* SỬA MÀU NỀN KHUNG CONTROL */}
+          
+          <Avatar className="h-10 w-10 border-2 border-red-100 dark:border-red-900">
+            <AvatarFallback className="bg-red-50 text-red-600 font-bold dark:bg-red-900 dark:text-red-100">
               {currentChild?.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -424,8 +425,8 @@ export function ChildMonitoring() {
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label>Name</Label>
-                            <Input placeholder="Ex: My Son" value={newChildName} onChange={(e) => setNewChildName(e.target.value)} />
+                            <Label>Display Name</Label>
+                            <Input placeholder="Ex: Son, Alex" value={newChildName} onChange={(e) => setNewChildName(e.target.value)} />
                         </div>
                         <div className="grid gap-2">
                             <Label>Age</Label>
@@ -470,13 +471,12 @@ export function ChildMonitoring() {
       </div>
 
       <Tabs defaultValue="interactions" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 h-12 p-1 bg-muted/50 rounded-xl">
+        <TabsList className="grid w-full grid-cols-3 h-12 p-1 bg-muted rounded-xl">
           <TabsTrigger value="interactions" className="rounded-lg">Interactions</TabsTrigger>
           <TabsTrigger value="subreddits" className="rounded-lg">Subreddits</TabsTrigger>
           <TabsTrigger value="reports" className="rounded-lg">Reports</TabsTrigger>
         </TabsList>
 
-        {/* --- TAB 1: INTERACTIONS --- */}
         <TabsContent value="interactions" className="space-y-6 mt-0">
           <Card className="border-t-4 border-t-red-500 shadow-sm">
             <CardHeader>
@@ -500,15 +500,13 @@ export function ChildMonitoring() {
                         <div className="flex flex-col gap-3">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Badge variant="outline" className="bg-white">
+                                    <Badge variant="outline" className="bg-background">
                                         {interaction.type === 'post' ? <FileText className="h-3 w-3 mr-1"/> : <MessageSquare className="h-3 w-3 mr-1"/>}
                                         {interaction.type === 'post' ? "Post" : "Comment"}
                                     </Badge>
                                     <span>in <span className="font-semibold text-foreground">{interaction.subreddit}</span></span>
-                                    {/* Dùng hàm format thời gian mới */}
                                     <span>• {formatTimeAgo(interaction.created_at)}</span>
                                 </div>
-                                {/* Dùng đúng tên trường risk_level */}
                                 <RiskIndicator level={interaction.risk_level} showIcon={true} />
                             </div>
                             <p className="text-base text-foreground/90 pl-1 border-l-2 border-muted">
@@ -517,7 +515,7 @@ export function ChildMonitoring() {
                             <div className="flex items-center justify-between pt-2">
                                 <div className="flex items-center gap-2">
                                     <span className="text-xs font-medium uppercase text-muted-foreground">Sentiment</span>
-                                    <Badge variant="secondary" className={interaction.sentiment === 'Negative' ? 'bg-red-100 text-red-700' : ''}>
+                                    <Badge variant="secondary" className={interaction.sentiment === 'Negative' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : ''}>
                                         {interaction.sentiment}
                                     </Badge>
                                 </div>
@@ -534,7 +532,6 @@ export function ChildMonitoring() {
           </Card>
         </TabsContent>
 
-        {/* --- TAB 2: SUBREDDITS --- */}
         <TabsContent value="subreddits" className="space-y-6 mt-0">
             {isFetchingSubreddits ? (
                 <div className="flex flex-col items-center justify-center py-12 space-y-4">
@@ -542,13 +539,13 @@ export function ChildMonitoring() {
                     <p className="text-muted-foreground">Analyzing Reddit data for u/{currentChild?.reddit_username}...</p>
                 </div>
             ) : subredditsList.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed rounded-xl bg-slate-50">
+                <div className="text-center py-12 border-2 border-dashed rounded-xl border-slate-200 dark:border-slate-800">
                     <p className="text-muted-foreground">No community participation found. This account may not have public activity.</p>
                 </div>
             ) : (
                 <>
                     <div className="flex items-center justify-between px-1">
-                        <h3 className="font-semibold text-slate-700">Top 10 Most Active Communities</h3>
+                        <h3 className="font-semibold text-foreground">Top 10 Most Active Communities</h3>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                         {subredditsList.map((sub, index) => (

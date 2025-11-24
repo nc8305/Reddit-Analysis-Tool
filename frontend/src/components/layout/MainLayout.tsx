@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { Badge } from "../ui/badge";
+import { ModeToggle } from "../mode-toggle"; // Đảm bảo đã import nút này
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -26,21 +26,20 @@ export function MainLayout({
   onNavigate,
   onLogout,
 }: MainLayoutProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Chưa dùng thì có thể bỏ
 
   const menuItems = [
+    { id: "dashboard", label: "Overview", icon: Home },
     { id: "trends", label: "Risk & Trends", icon: TrendingUp },
-    { id: "dashboard", label: "Overview", icon: Home }, // Đổi label thành Overview hoặc Home
-    // { id: "trends", label: "Risk & Trends", icon: TrendingUp },
     { id: "monitoring", label: "Child Monitoring", icon: Eye },
     { id: "alerts", label: "Alerts", icon: Bell },
     { id: "settings", label: "Settings", icon: SettingsIcon },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50/30 to-blue-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50/30 to-blue-50/30 dark:from-slate-950 dark:to-slate-900">
       {/* Header */}
-      <header className="bg-white w-full border-b sticky top-0 z-50 shadow-sm">
+      <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-full border-b sticky top-0 z-50 shadow-sm">
         <div className="w-full justify-between px-4">
           <div className="flex w-full items-center justify-between h-16">
             <div className="flex items-center gap-3">
@@ -48,7 +47,7 @@ export function MainLayout({
                 <Shield className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl tracking-tight">Reddit Monitor</h1>
+                <h1 className="text-xl tracking-tight font-bold text-foreground">Reddit Monitor</h1>
                 <p className="text-xs text-muted-foreground hidden sm:block">
                   Children's Social Media Monitor
                 </p>
@@ -56,6 +55,7 @@ export function MainLayout({
             </div>
 
             <div className="flex items-center gap-4">
+              <ModeToggle />
               <Avatar className="h-9 w-9 bg-secondary">
                 <AvatarFallback className="text-primary">P</AvatarFallback>
               </Avatar>
@@ -63,7 +63,7 @@ export function MainLayout({
                 variant="ghost"
                 size="sm"
                 onClick={onLogout}
-                className="hidden sm:flex"
+                className="hidden sm:flex text-foreground hover:text-red-500"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
@@ -76,7 +76,7 @@ export function MainLayout({
       {/* Main Content Area */}
       <div className="flex">
         {/* Sidebar Navigation */}
-        <aside className="hidden lg:block w-64 min-h-[calc(100vh-4rem)] bg-white border-r">
+        <aside className="hidden lg:block w-64 min-h-[calc(100vh-4rem)] bg-background border-r">
           <nav className="p-4 space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -87,7 +87,9 @@ export function MainLayout({
                   key={item.id}
                   variant={isActive ? "default" : "ghost"}
                   className={`w-full justify-start ${
-                    isActive ? "bg-red-600 hover:bg-red-500" : "hover:bg-accent"
+                    isActive 
+                    ? "bg-red-600 hover:bg-red-500 text-white" 
+                    : "hover:bg-accent text-foreground"
                   }`}
                   onClick={() => onNavigate(item.id)}
                 >
@@ -99,33 +101,8 @@ export function MainLayout({
           </nav>
         </aside>
 
-        {/* Mobile Navigation */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-40">
-          <nav className="flex justify-around p-2">
-            {menuItems.slice(0, 5).map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPage === item.id;
-
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? "default" : "ghost"}
-                  size="sm"
-                  className="flex-1 flex-col h-auto py-2 px-1 relative"
-                  onClick={() => onNavigate(item.id)}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span className="text-xs mt-1">
-                    {item.label.split(" ")[0]}
-                  </span>
-                </Button>
-              );
-            })}
-          </nav>
-        </div>
-
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8 bg-slate-50">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8 bg-muted/20 dark:bg-background">
           <div className="w-full mx-auto">{children}</div>
         </main>
       </div>

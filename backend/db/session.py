@@ -9,10 +9,13 @@ DATABASE_URL = env_settings.DATABASE_URL
 # Thêm tham số pool_pre_ping=True và pool_recycle
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True,      # Tự động kiểm tra kết nối trước khi dùng (Fix lỗi connection closed)
-    pool_recycle=3600,       # Tự động tái tạo kết nối mỗi 1 giờ để tránh timeout
-    pool_size=20,            # Tăng kích thước pool nếu worker xử lý nhiều
-    max_overflow=10
+    pool_pre_ping=True,
+    pool_recycle=1800, # Tái tạo sau 30 phút
+    pool_size=2,       # <--- Giảm xuống còn 2
+    max_overflow=1,   # <--- Chỉ cho phép tràn thêm 1 khi quá tải
+    connect_args={
+        "prepare_threshold": None  # <--- QUAN TRỌNG: Tắt Prepared Statements để chạy được với Port 6543
+    }
 )
 # --------------------
 
