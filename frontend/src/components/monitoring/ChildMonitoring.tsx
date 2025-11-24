@@ -368,7 +368,7 @@ export function ChildMonitoring() {
       {/* Header & Controls */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-2xl border shadow-sm 
         bg-gradient-to-r from-red-50 to-white border-red-100 
-        dark:from-slate-950 dark:to-slate-900 dark:border-red-900/50"> {/* SỬA MÀU NỀN TẠI ĐÂY */}
+        dark:from-slate-900 dark:to-slate-950 dark:border-red-900/30"> {/* SỬA MÀU NỀN TẠI ĐÂY */}
         
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">

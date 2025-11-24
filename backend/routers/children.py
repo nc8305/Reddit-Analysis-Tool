@@ -143,6 +143,32 @@ router = APIRouter()
 @router.get("/", response_model=List[ChildResponse])
 def get_my_children(current_user: User = Depends(get_current_user)):
     return current_user.children
+    
+@router.get("/dashboard/stats")
+def get_dashboard_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    children_stats = []
+    total_activity = 0
+    
+    for child in current_user.children:
+        # Đếm số lượng interaction của từng bé trong DB
+        count = db.query(Interaction).filter(Interaction.child_id == child.id).count()
+        total_activity += count
+        
+        children_stats.append({
+            "id": child.id,
+            "name": child.name,
+            "username": child.reddit_username,
+            "scanned_count": count
+        })
+        
+    return {
+        "total_children": len(current_user.children),
+        "total_activity": total_activity,
+        "details": children_stats
+    }
 
 @router.post("/", response_model=ChildResponse)
 def add_child(child_in: ChildCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

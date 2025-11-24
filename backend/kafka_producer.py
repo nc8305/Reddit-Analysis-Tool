@@ -22,6 +22,6 @@ def send_scan_request(child_id: int, reddit_username: str):
         }
         # Gửi task vào topic 'reddit_scan_tasks'
         producer.send('reddit_scan_tasks', value=message)
-        print(f"--> [Kafka] Đã gửi yêu cầu quét cho {reddit_username}")
+        print(f"[Kafka] sent scan request for {reddit_username}")
     else:
-        print("--> [Kafka] Lỗi: Không kết nối được Kafka Broker")
+        print("[Kafka] Producer not available. Cannot send message.")

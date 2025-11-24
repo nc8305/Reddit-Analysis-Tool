@@ -1,5 +1,4 @@
 import React from "react";
-import { useState } from "react";
 import {
   Home,
   Eye,
@@ -11,7 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { ModeToggle } from "../mode-toggle"; // Đảm bảo đã import nút này
+import { ModeToggle } from "../mode-toggle";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -26,8 +25,7 @@ export function MainLayout({
   onNavigate,
   onLogout,
 }: MainLayoutProps) {
-  // const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Chưa dùng thì có thể bỏ
-
+  
   const menuItems = [
     { id: "dashboard", label: "Overview", icon: Home },
     { id: "trends", label: "Risk & Trends", icon: TrendingUp },
@@ -37,73 +35,81 @@ export function MainLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50/30 to-blue-50/30 dark:from-slate-950 dark:to-slate-900">
-      {/* Header */}
-      <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-full border-b sticky top-0 z-50 shadow-sm">
-        <div className="w-full justify-between px-4">
-          <div className="flex w-full items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl tracking-tight font-bold text-foreground">Reddit Monitor</h1>
-                <p className="text-xs text-muted-foreground hidden sm:block">
-                  Children's Social Media Monitor
-                </p>
-              </div>
-            </div>
+    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
+      {/* --- SIDEBAR (MÀU TỐI) --- */}
+      <aside className="hidden lg:flex w-64 flex-col bg-slate-900 text-white border-r border-slate-800">
+        {/* Logo Area */}
+        <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-800">
+          <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <Shield className="h-5 w-5 text-white" />
+          </div>
+          <span className="font-bold text-lg tracking-tight">Reddit Monitor</span>
+        </div>
 
-            <div className="flex items-center gap-4">
-              <ModeToggle />
-              <Avatar className="h-9 w-9 bg-secondary">
-                <AvatarFallback className="text-primary">P</AvatarFallback>
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-1">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPage === item.id;
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => onNavigate(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                  isActive
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-900/20"
+                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                }`}
+              >
+                <Icon className={`h-5 w-5 ${isActive ? "text-white" : "text-slate-400 group-hover:text-white"}`} />
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* User Profile in Sidebar (Optional placement) */}
+        <div className="p-4 border-t border-slate-800">
+           <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-800/50">
+              <Avatar className="h-8 w-8 border border-slate-600">
+                <AvatarFallback className="bg-slate-700 text-slate-200 text-xs">P</AvatarFallback>
               </Avatar>
+              <div className="flex-1 overflow-hidden">
+                 <p className="text-sm font-medium truncate">Parent Account</p>
+                 <p className="text-xs text-slate-400 truncate">Pro Plan</p>
+              </div>
+           </div>
+        </div>
+      </aside>
+
+      {/* --- MAIN CONTENT AREA --- */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Header (Light & Clean) */}
+        <header className="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-10">
+           <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 capitalize">
+              {menuItems.find(i => i.id === currentPage)?.label}
+           </h2>
+           
+           <div className="flex items-center gap-4">
+              <ModeToggle />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onLogout}
-                className="hidden sm:flex text-foreground hover:text-red-500"
+                className="text-slate-500 hover:text-red-600 hover:bg-red-50"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
-            </div>
+           </div>
+        </header>
+
+        {/* Content Scroll Area */}
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto space-y-6">
+             {children}
           </div>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <div className="flex">
-        {/* Sidebar Navigation */}
-        <aside className="hidden lg:block w-64 min-h-[calc(100vh-4rem)] bg-background border-r">
-          <nav className="p-4 space-y-2">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPage === item.id;
-
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? "default" : "ghost"}
-                  className={`w-full justify-start ${
-                    isActive 
-                    ? "bg-red-600 hover:bg-red-500 text-white" 
-                    : "hover:bg-accent text-foreground"
-                  }`}
-                  onClick={() => onNavigate(item.id)}
-                >
-                  <Icon className="h-4 w-4 mr-3" />
-                  {item.label}
-                </Button>
-              );
-            })}
-          </nav>
-        </aside>
-
-        {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8 bg-muted/20 dark:bg-background">
-          <div className="w-full mx-auto">{children}</div>
         </main>
       </div>
     </div>

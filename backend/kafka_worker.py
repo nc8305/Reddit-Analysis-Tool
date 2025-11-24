@@ -4,21 +4,17 @@ import os
 from kafka import KafkaConsumer
 from sqlalchemy.orm import Session
 
-# 1. Setup đường dẫn để Python tìm thấy module backend
 sys.path.append(os.getcwd())
 
 from backend.db.session import SessionLocal
 from backend.services.reddit_service import get_user_interactions
-
-# --- QUAN TRỌNG: IMPORT ĐẦY ĐỦ CÁC MODEL ---
-# SQLAlchemy cần "nhìn thấy" tất cả các Class này để map quan hệ (Child <-> User)
 from backend.models.interaction import Interaction
 from backend.models.child import Child
 from backend.models.user import User 
 # -------------------------------------------
 
 def run_worker():
-    print("--- Kafka Worker đang chạy... Đang chờ task ---")
+    print("--- Consumer running ---")
     
     # 2. Khởi tạo Consumer
     consumer = KafkaConsumer(
@@ -35,17 +31,17 @@ def run_worker():
         child_id = task['child_id']
         username = task['username']
         
-        print(f"[*] Nhận task: Quét dữ liệu cho {username} (Child ID: {child_id})")
+        print(f"[*] Receive task: Scan {username} (Child ID: {child_id})")
         
         # 3. Gọi PRAW lấy dữ liệu thật
         try:
             interactions_data = get_user_interactions(username)
         except Exception as e:
-            print(f"   -> Lỗi PRAW: {e}")
+            print(f" PRAW error: {e}")
             continue
         
         if not interactions_data:
-            print("   -> Không tìm thấy dữ liệu mới.")
+            print(" No updates found.")
             continue
 
         # 4. Lưu vào Database
@@ -71,9 +67,9 @@ def run_worker():
                     count += 1
             
             db.commit()
-            print(f"   -> Đã lưu {count} tương tác mới vào DB.")
+            print(f"Save {count} new interactions.")
         except Exception as e:
-            print(f"   -> Lỗi DB: {e}")
+            print(f" DB error: {e}")
             db.rollback()
         finally:
             db.close()

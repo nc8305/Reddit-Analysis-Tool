@@ -126,7 +126,7 @@ def get_user_top_subreddits(username: str):
         try:
             for submission in user.submissions.new():
                 subreddit_counts[submission.subreddit.display_name] += 1
-        except Exception:
+        except Exception:       
             pass
 
         # 3. Lấy Top N 
