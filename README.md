@@ -57,6 +57,7 @@ This repository contains both the frontend and backend code. Follow these steps 
 
 ```bash
 git clone [https://github.com/nc8305/Reddit-Analysis-Tool.git](https://github.com/nc8305/Reddit-Analysis-Tool.git)
+
 cd Reddit-Analysis-Tool
 ```
 
@@ -69,6 +70,7 @@ cd Reddit-Analysis-Tool
  # Verify services are running (Look for 'kafka' and 'zookeeper' with status 'Up')
  sudo docker ps
 ```
+
 3. **Setting up backend**
 
  ```bash
@@ -79,7 +81,22 @@ source .venv/bin/activate
 # Install required libraries
 pip install -r backend/requirement.txt
 ```
-4. **Setting up the Frontend**
+4. **Running the Services: You need to open two separate terminals to run the backend components.**
+
+Terminal 1: API Server
+
+```bash
+
+# Ensure venv is activated
+python3 -m backend.main
+```
+Terminal 2: Kafka Worker
+```bash
+# Ensure venv is activated
+python3 -m backend.kafka_worker
+```
+
+5. **Setting up the Frontend**
 Open a new terminal window and navigate to the frontend directory.
 ```bash
 cd frontend
