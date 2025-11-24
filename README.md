@@ -1,8 +1,6 @@
 # Reddit Monitor: A Parental Insight Tool
 
-[](https://opensource.org/licenses/MIT)
-[](https://www.google.com/search?q=CONTRIBUTING.md)
-[](https://github.com/anatwork14/reddit_monitor)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A web application designed to help parents understand their children's content consumption and activity on Reddit, promoting safer and more aware online experiences.
 
@@ -16,88 +14,79 @@ The internet is vast, and platforms like Reddit offer incredible communities for
 
 This application provides a secure, parent-facing dashboard that connects to a child's Reddit account (with their consent) to provide a high-level overview of their activity. The goal is not to read every private message, but to understand the *nature* of the content being consumed.
 
-Parents can see:
+### System Architecture (Asynchronous Processing)
 
-  * Subreddits their child frequents.
-  * Recent public posts and comments.
-  * An analysis of topics and communities to help start important conversations.
+To ensure high performance and prevent the user interface from freezing while analyzing large amounts of data, the system implements an asynchronous architecture using **Apache Kafka**:
 
-## Project Philosophy & Social Awareness
+1.  **Trigger:** The frontend sends a scan request to the Backend API.
+2.  **Queue:** The API immediately pushes a task message to the Kafka Topic and responds to the user (Non-blocking).
+3.  **Process:** A background **Kafka Worker** picks up the task, connects to Reddit API (PRAW) to fetch data, analyzes it, and saves it to the Database.
+4.  **Result:** The frontend retrieves the processed data from the Database to display to the user.
 
-This is not just a "monitoring" tool; it's a "conversation starter." We believe the best way to keep children safe online is through trust and open communication.
+## Key Features
 
-Our guiding principle is to provide just enough insight for a parent to be *aware*, not to be *invasive*. This project is being built with the future goal of promoting greater social awareness around how teenagers interact with social media. We aim to build features that could one day be suggested to platforms like Facebook or Reddit themselves—features that prioritize user well-being and empower families, not just data collection.
-
-## Key Features (Current & Planned)
-
-  * **Secure Parent Dashboard:** A private, password-protected portal for parents.
-  * **Activity Overview:** A clear and simple view of recent public comments and posts.
-  * **Subreddit Analysis:** See which communities your child is a part of and the general topics of those communities.
-  * **Consent-Based:** Designed to be used *with* a child's knowledge, fostering trust.
+* **Secure Parent Dashboard:** A private, password-protected portal for parents.
+* **Activity Overview:** A clear and simple view of recent public comments and posts.
+* **Real-time Processing:** Powered by Kafka to handle data scanning in the background without system lag.
+* **Subreddit Analysis:** See which communities your child is a part of and the general topics of those communities.
+* **Consent-Based:** Designed to be used *with* a child's knowledge, fostering trust.
 
 ## Tech Stack
 
-Based on the repository structure, this project is built with a modern web frontend.
+This project is built with a modern, scalable web stack:
 
-  * **Frontend:** **TypeScript** (likely with a framework like **React, Angular, or Vue**)
-  * **Styling:** **Tailwind CSS**
-  * **Backend:** **FastAPI**.
-  * **API:** **Reddit API**
+* **Frontend:** TypeScript (React)
+* **Styling:** Tailwind CSS
+* **Backend:** Python (FastAPI)
+* **Database:** PostgreSQL
+* **Message Queue:** Apache Kafka & Zookeeper (for async tasks)
+* **API:** Reddit Official API (PRAW)
 
 ## Getting Started (for Developers)
 
-This repository contains the **frontend** for the Reddit Monitor application. To get it running locally, you will likely need to set up a separate backend service to handle authentication and Reddit API requests.
+This repository contains both the frontend and backend code. Follow these steps to set up the full environment.
 
-### Running the Frontend
+### Prerequisites
 
-1.  **Clone the repository:**
+* Node.js & npm (or yarn)
+* Python 3.8+
+* Docker & Docker Compose (Required for Kafka infrastructure)
+* Git
 
-    ```bash
-    git clone https://github.com/nc8305/Reddit-Analysis-Tool.git
-    cd reddit_monitor/frontend
-    ```
+1. **Clone the Repository**
 
-2.  **Install dependencies:**
-    (This project uses `npm`. You can use `yarn` if you prefer.)
+```bash
+git clone [https://github.com/nc8305/Reddit-Analysis-Tool.git](https://github.com/nc8305/Reddit-Analysis-Tool.git)
+cd Reddit-Analysis-Tool
 
-    ```bash
-    npm install
-    ```
+2. **Start Infrastructure (Kafka & Database)** 
 
-3.  **Set up environment variables:**
-    This application will require API keys to connect to its backend. Create a `.env` file in the `/frontend` root directory.
+ ```bash
+  # Start Kafka and Zookeeper in the background
+ sudo docker compose up -d
 
-    ```
-    # Example .env file
-    # The URL of your local or deployed backend server
-    REACT_APP_API_BASE_URL=http://localhost:5000
-    ```
+ # Verify services are running (Look for 'kafka' and 'zookeeper' with status 'Up')
+ sudo docker ps
 
-4.  **Run the development server:**
+3. **Setting up backend**
 
-    ```bash
-    npm start
-    ```
+ ```bash
+ # Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
 
-    This will open the app in your browser, usually at `http://localhost:3000`.
+# Install required libraries
+pip install -r backend/requirement.txt
 
-**Note:** For full functionality, you will need a backend server running that securely communicates with the Reddit API using OAuth.
-### Running the Backend
+4. **Setting up the Frontend**
+Open a new terminal window and navigate to the frontend directory.
+```bash
+cd frontend
+# Install dependencies
+npm install
+# Run the development server
+npm run dev
 
-1.  **Clone the repository:**
-
-    ```bash
-    git clone https://github.com/nc8305/Reddit-Analysis-Tool.git
-    cd reddit_monitor
-    ```
-2.  **Install require lib:**
-   ```bash
-   pip install -r requirement.txt
-   ```
-3.  **Run back end:**
-   ```bash
-   python3 -m backend.main
-   ```
 ## Project Roadmap: The Future Vision
 
 This project is just getting started. Here is our vision for the future:
@@ -123,6 +112,3 @@ Please read our `CONTRIBUTING.md` file (you'll need to create this) for more det
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.
-
-
-
