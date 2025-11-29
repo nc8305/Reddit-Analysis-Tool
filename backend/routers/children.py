@@ -127,7 +127,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-
+from typing import Optional
 from backend.db.session import SessionLocal
 from backend.models.child import Child
 from backend.models.user import User
@@ -222,15 +222,28 @@ def trigger_scan(
 @router.get("/{child_id}/interactions")
 def get_child_interactions_from_db(
     child_id: int,
+    sentiment: Optional[str] = None,  # Thêm tham số lọc
+    risk_level: Optional[str] = None, # Thêm tham số lọc
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Kiểm tra quyền truy cập trước
+    # 1. Kiểm tra quyền truy cập
     target_child = next((c for c in current_user.children if c.id == child_id), None)
     if not target_child:
         raise HTTPException(status_code=404, detail="Không tìm thấy hồ sơ")
 
-    # Lấy dữ liệu từ bảng interactions, sắp xếp mới nhất
-    data = db.query(Interaction).filter(Interaction.child_id == child_id).order_by(Interaction.created_at.desc()).all()
+    # 2. Xây dựng Query cơ bản
+    query = db.query(Interaction).filter(Interaction.child_id == child_id)
+
+    # 3. Áp dụng bộ lọc nếu có tham số truyền vào
+    if sentiment and sentiment != "all":
+        # So sánh không phân biệt hoa thường
+        query = query.filter(Interaction.sentiment.ilike(sentiment))
+    
+    if risk_level and risk_level != "all":
+        query = query.filter(Interaction.risk_level == risk_level)
+
+    # 4. Lấy dữ liệu và sắp xếp mới nhất
+    data = query.order_by(Interaction.created_at.desc()).all()
     
     return data

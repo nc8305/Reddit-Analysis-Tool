@@ -14,6 +14,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Avatar, AvatarFallback } from "../ui/avatar";
+import { motion } from "framer-motion";
 import {
   ExternalLink,
   FileDown,
@@ -88,29 +89,36 @@ interface SubredditData {
 }
 
 export function ChildMonitoring() {
+  // --- STATES ---
   const [childrenList, setChildrenList] = useState<Child[]>([]);
   const [selectedChildId, setSelectedChildId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
+  // Data
   const [interactionsList, setInteractionsList] = useState<Interaction[]>([]);
   const [subredditsList, setSubredditsList] = useState<SubredditData[]>([]);
   
+  // Loading status
   const [isFetchingInteractions, setIsFetchingInteractions] = useState(false);
   const [isFetchingSubreddits, setIsFetchingSubreddits] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
 
+  // Dialogs
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newChildName, setNewChildName] = useState("");
   const [newChildAge, setNewChildAge] = useState("");
   const [newChildUsername, setNewChildUsername] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
+  // Filters
   const [searchValue, setSearchValue] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");
+  const [sentimentFilter, setSentimentFilter] = useState("all"); // Thêm state cho Sentiment
   const [dateFilter, setDateFilter] = useState("7days");
   const [subredditFilter, setSubredditFilter] = useState("all");
   const [anonymizeReport, setAnonymizeReport] = useState(false);
 
+  // Helper: Format Time
   const formatTimeAgo = (dateString: string) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -122,6 +130,8 @@ export function ChildMonitoring() {
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
     return `${Math.floor(diffInSeconds / 86400)}d ago`;
   };
+
+  // --- API FUNCTIONS ---
 
   const fetchChildren = async () => {
     setIsLoading(true);
@@ -158,14 +168,22 @@ export function ChildMonitoring() {
     }
   };
 
+  // Updated fetchInteractions with Filters
   const fetchInteractions = async () => {
     if (!selectedChildId) return;
     setIsFetchingInteractions(true);
     try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:8000/api/children/${selectedChildId}/interactions`, {
+        
+        // Tạo URL có query params
+        const url = new URL(`http://localhost:8000/api/children/${selectedChildId}/interactions`);
+        if (riskFilter !== "all") url.searchParams.append("risk_level", riskFilter);
+        if (sentimentFilter !== "all") url.searchParams.append("sentiment", sentimentFilter);
+
+        const res = await fetch(url.toString(), {
             headers: { "Authorization": `Bearer ${token}` }
         });
+
         if (res.ok) {
             const data = await res.json();
             setInteractionsList(data);
@@ -215,10 +233,15 @@ export function ChildMonitoring() {
 
       if (res.ok) {
         toast.success("Scanning in background. Data will appear shortly!");
+        
+        // Polling: Check for new data multiple times
+        setTimeout(() => fetchInteractions(), 3000);
+        setTimeout(() => fetchInteractions(), 5000);
         setTimeout(() => {
             fetchInteractions();
             setIsScanning(false);
-        }, 3000);
+            toast.success("Data refresh complete!");
+        }, 10000);
       } else {
         toast.error("Error sending scan request.");
         setIsScanning(false);
@@ -290,16 +313,21 @@ export function ChildMonitoring() {
     }
   };
 
+  // --- EFFECTS ---
+
   useEffect(() => {
     fetchChildren();
   }, []);
 
+  // Tự động fetch lại khi thay đổi Child hoặc Bộ lọc
   useEffect(() => {
     fetchInteractions();
     fetchSubreddits();
-  }, [selectedChildId]);
+  }, [selectedChildId, riskFilter, sentimentFilter]);
 
   const currentChild = childrenList.find(c => c.id.toString() === selectedChildId);
+
+  // --- RENDER ---
 
   if (isLoading) {
     return (
@@ -364,11 +392,16 @@ export function ChildMonitoring() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-8 animate-in fade-in duration-500"
+    >
       {/* Header & Controls */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-2xl border shadow-sm 
         bg-gradient-to-r from-red-50 to-white border-red-100 
-        dark:from-slate-900 dark:to-slate-950 dark:border-red-900/30"> {/* SỬA MÀU NỀN TẠI ĐÂY */}
+        dark:from-slate-900 dark:to-slate-950 dark:border-red-900/30">
         
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
@@ -382,7 +415,7 @@ export function ChildMonitoring() {
 
         <div className="flex items-center gap-3 p-2 rounded-xl border shadow-sm 
           bg-white border-slate-200 
-          dark:bg-slate-950 dark:border-slate-800"> {/* SỬA MÀU NỀN KHUNG CONTROL */}
+          dark:bg-slate-950 dark:border-slate-800">
           
           <Avatar className="h-10 w-10 border-2 border-red-100 dark:border-red-900">
             <AvatarFallback className="bg-red-50 text-red-600 font-bold dark:bg-red-900 dark:text-red-100">
@@ -487,7 +520,25 @@ export function ChildMonitoring() {
               <CardDescription>Recent posts and comments from u/{currentChild?.reddit_username}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <FilterBar searchValue={searchValue} onSearchChange={setSearchValue} showRiskFilter riskFilter={riskFilter} onRiskFilterChange={setRiskFilter} />
+              {/* Filter Bar Updated with Sentiment Filter */}
+              <FilterBar 
+                searchValue={searchValue} 
+                onSearchChange={setSearchValue} 
+                
+                showRiskFilter 
+                riskFilter={riskFilter} 
+                onRiskFilterChange={setRiskFilter}
+                
+                showSentimentFilter
+                sentimentFilter={sentimentFilter}
+                onSentimentFilterChange={setSentimentFilter}
+                
+                onClearFilters={() => {
+                    setSearchValue("");
+                    setRiskFilter("all");
+                    setSentimentFilter("all");
+                }}
+              />
 
               {isFetchingInteractions ? (
                   <div className="flex justify-center py-8"><Loader2 className="animate-spin text-red-600"/></div>
@@ -569,6 +620,6 @@ export function ChildMonitoring() {
             </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </motion.div>
   );
 }
